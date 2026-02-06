@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>정부24</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="정부24">
+    <link rel="apple-touch-icon" href="icon.png">
+</head>
+
+<body>
+    <div class="mobile-container">
+        <!-- Privacy Overlay -->
+        <div id="privacy-overlay" class="privacy-overlay hidden">
+            <img src="icon.png" alt="Protected">
+        </div>
+        <!-- Header (Initially Hidden) -->
+        <header id="main-header" class="hidden">
+            <h1>모바일 신분증</h1>
+            <p>신분증 발급을 위해 정보를 입력해주세요.</p>
+        </header>
+
+        <!-- Login View (Home Screen Image) -->
+        <main id="login-view">
+            <div class="home-screen-container">
+                <img src="home_bg.png" alt="Home Screen" class="home-bg-img">
+                <!-- Transparent Click Area for Login Button (Top Right) -->
+                <div class="login-trigger-area" onclick="showLoginModal()"></div>
+                <!-- Transparent Click Area for ID View (Resident Registration Extract box) - Hidden initially -->
+                <div id="id-trigger" class="id-trigger-area hidden" onclick="showResult()"></div>
+            </div>
+
+            <!-- Login Modal (Hidden by default) -->
+            <div id="login-modal" class="login-modal hidden">
+                <div class="login-container">
+                    <div class="login-logo">
+                        <img src="icon.png" alt="Logo" class="login-logo-img">
+                    </div>
+                    <h2 class="login-title">로그인 <span style="font-size: 12px; color: #888;">v1.4</span></h2>
+                    <div class="login-form">
+                        <div class="input-group">
+                            <label>아이디</label>
+                            <input type="text" id="login-id" placeholder="아이디를 입력하세요">
+                        </div>
+                        <div class="input-group">
+                            <label>비밀번호</label>
+                            <input type="password" id="login-pw" placeholder="비밀번호를 입력하세요">
+                        </div>
+                        <button type="button" onclick="handleLogin()" class="submit-btn login-btn">로그인</button>
+                        <button type="button" onclick="hideLoginModal()" class="submit-btn cancel-btn"
+                            style="background: transparent; color: #555; margin-top: 10px; box-shadow: none;">취소</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Input Form (Initially Hidden) -->
+        <main id="input-form" class="hidden">
+            <form>
+                <div class="photo-section">
+                    <div class="photo-preview">
+                        <img id="my-photo" src="https://via.placeholder.com/150?text=PHOTO" alt="증명사진">
+                    </div>
+                    <label for="file-upload" class="upload-label">선택하기</label>
+                    <input type="file" id="file-upload" accept="image/*" onchange="showMyImage(event)">
+                </div>
+                <div class="input-group">
+                    <label>이름</label>
+                    <input type="text" id="name-input" value="김경민" placeholder="홍길동" required>
+                </div>
+                <div class="input-group">
+                    <label>주민등록번호</label>
+                    <div class="rrn-container">
+                        <input type="text" id="rrn1-input" value="000101" placeholder="앞 6자리" maxlength="6"
+                            class="half-input">
+                        <span class="dash">-</span>
+                        <input type="password" id="rrn2-input" value="3000000" placeholder="뒤 7자리" maxlength="7"
+                            class="half-input">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>주소</label>
+                    <input type="text" id="address-input" value="경기도 시흥시 배곧동" placeholder="예: 강남대로 123" required>
+                </div>
+                <div class="input-group">
+                    <label>도로명</label>
+                    <input type="text" id="road-name-input" value="배곧로 123" placeholder="예: 강남대로 123" required>
+                </div>
+                <div class="input-group">
+                    <label>상세 주소</label>
+                    <input type="text" id="detail-address-input" value="101동 101호" placeholder="예: 101동 101호" required>
+                </div>
+                <div class="input-group">
+                    <label>시 (City)</label>
+                    <input type="text" id="city-input" value="시흥시" placeholder="예: 서울특별시" required>
+                </div>
+                <button type="button" onclick="showResult()" class="submit-btn">발급 신청하기</button>
+            </form>
+        </main>
+
+        <div id="result-view" class="mobile-id-screen hidden">
+            <div class="nav-bar">
+                <span class="back-arrow" onclick="goBack()">&lt;</span>
+                <span class="nav-title">모바일 신분증</span>
+                <span class="menu-icon"></span>
+            </div>
+            <div class="tab-menu">
+                <span class="tab active">주민등록증</span>
+            </div>
+            <div class="id-card-container">
+                <div class="id-card">
+                    <!-- Normal View -->
+                    <div id="normal-view">
+                        <div class="card-photo-area">
+                            <img id="result-photo" src="" alt="증명사진">
+                        </div>
+                        <div class="card-body-row">
+                            <div class="card-info">
+                                <h2 id="result-name">홍길순</h2>
+                                <p class="card-dob" id="result-dob">03.01.05</p>
+                                <p class="card-address" id="result-address">서울특별시 마포구</p>
+                            </div>
+                            <div class="qr-area">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=MobileID"
+                                    alt="QR Code">
+                            </div>
+                        </div>
+                        <div class="timer-bar">
+                            <div id="timer-progress" class="progress"></div>
+                            <span id="timer-text" class="timer-text">남은시간 <span class="timer-blue">30초</span></span>
+                        </div>
+                        <div class="detail-box" onclick="toggleView(true)">상세정보 표시</div>
+                    </div>
+
+                    <!-- Detail View -->
+                    <div id="detail-view" class="hidden">
+                        <div class="detail-photo-area">
+                            <img id="detail-photo" src="" alt="증명사진">
+                        </div>
+                        <div class="detail-text-wrapper">
+                            <h2 id="detail-name" class="detail-name">홍길순</h2>
+                            <div class="detail-rrn-row">
+                                <span id="detail-rrn">061203 - <span class="rrn-mask"></span>●●●●●●</span></span>
+                                <label class="switch">
+                                    <input type="checkbox" id="rrn-toggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <div class="detail-address-area">
+                                <p id="detail-address-line1" class="detail-address-line1">경기도 시흥시 배곧동</p>
+                                <p id="detail-address-line2" class="detail-address-line2">............</p>
+                            </div>
+                            <p id="detail-issue-date" class="detail-date">20.24.10.13</p>
+                            <p id="detail-issuer" class="detail-issuer">시흥시청장</p>
+                        </div>
+
+                        <div class="timer-bar">
+                            <div id="detail-timer-progress" class="progress"></div>
+                            <span id="detail-timer-text" class="timer-text">남은시간 <span
+                                    class="timer-blue">30초</span></span>
+                        </div>
+
+                        <div class="qr-info-btn" onclick="toggleView(false)">QR정보 표시</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let loginTimeout;
+        let fullRrn2 = ""; // Store backend part of RRN
+
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+        }
+
+        function hideLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+        }
+
+        function showMyImage(event) {
+            var reader = new FileReader();
+            reader.onload = function () {
+                document.getElementById('my-photo').src = reader.result;
+            };
+            reader.readAsDataURL(event.target.files[0]);
+        }
+
+        function handleLogout() {
+            // Reset to initial home screen
+            const homeImg = document.querySelector('.home-bg-img');
+            homeImg.src = 'home_bg.png';
+
+            // Re-show login trigger and re-hide ID trigger
+            document.querySelector('.login-trigger-area').style.display = 'block';
+            document.getElementById('id-trigger').classList.add('hidden');
+
+            // Hide everything else and show login view
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('input-form').classList.add('hidden');
+
+            // Re-enable inputs for next login
+            const inputs = document.querySelectorAll('#input-form input');
+            inputs.forEach(input => input.disabled = false);
+            document.getElementById('file-upload').disabled = false;
+            document.querySelector('.upload-label').style.display = 'block';
+
+            // Clear result screen timer if active
+            clearInterval(timerInterval);
+        }
+        function handleLogin() {
+            // Simple validation or just proceed
+            const id = document.getElementById('login-id').value.trim().toLowerCase();
+            const pw = document.getElementById('login-pw').value.trim();
+
+            // Check for specific credentials to autofill
+            if (id === 'khyfool' && pw === 'khyfool@1') {
+                document.getElementById('name-input').value = '김경민';
+                document.getElementById('rrn1-input').value = '071203';
+                document.getElementById('rrn2-input').value = '3217624';
+                document.getElementById('address-input').value = '경기도 시흥시 배곧동';
+                document.getElementById('road-name-input').value = '배곧4로 106-26';
+                document.getElementById('detail-address-input').value = '1003동2102호';
+                document.getElementById('city-input').value = '시흥시';
+                document.getElementById('my-photo').src = 'id_photo.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'jeongjehun' && pw === '36431095a!') {
+                document.getElementById('name-input').value = '정재훈';
+                document.getElementById('rrn1-input').value = '060709';
+                document.getElementById('rrn2-input').value = '3059319';
+                document.getElementById('address-input').value = '경기도 시흥시 배곧동';
+                document.getElementById('road-name-input').value = '배곧동 299-3';
+                document.getElementById('detail-address-input').value = '9069호';
+                document.getElementById('city-input').value = '시흥시';
+                document.getElementById('my-photo').src = 'jeongjehun.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'songjiwoo09' && pw === 'Bmjw0225!') {
+                document.getElementById('name-input').value = '송지우';
+                document.getElementById('rrn1-input').value = '070708';
+                document.getElementById('rrn2-input').value = '4149917';
+                document.getElementById('address-input').value = '인천광역시 연수구';
+                document.getElementById('road-name-input').value = '연수구 넘말로 81';
+                document.getElementById('detail-address-input').value = '106동 1303호';
+                document.getElementById('city-input').value = '연수구';
+                document.getElementById('my-photo').src = 'songjiwoo.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'kimseoyeon' && pw === '1234') {
+                document.getElementById('name-input').value = '김서연';
+                document.getElementById('rrn1-input').value = '060219';
+                document.getElementById('rrn2-input').value = '4392837';
+                document.getElementById('address-input').value = '서울시 강서구';
+                document.getElementById('road-name-input').value = '공항대로583';
+                document.getElementById('detail-address-input').value = '103동 1805호';
+                document.getElementById('city-input').value = '서울시';
+                document.getElementById('my-photo').src = 'kimseoyeon.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'annapple95' && pw === 'aa47276181') {
+                document.getElementById('name-input').value = '박안나';
+                document.getElementById('rrn1-input').value = '950401';
+                document.getElementById('rrn2-input').value = '2053115';
+                document.getElementById('address-input').value = '서울시 용산구';
+                document.getElementById('road-name-input').value = '이태원로27길62-6';
+                document.getElementById('detail-address-input').value = '';
+                document.getElementById('city-input').value = '서울시';
+                document.getElementById('my-photo').src = 'annapple95.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'arinida88888' && pw === 'arini9078') {
+                document.getElementById('name-input').value = '권아린';
+                document.getElementById('rrn1-input').value = '040704';
+                document.getElementById('rrn2-input').value = '4093312';
+                document.getElementById('address-input').value = '부산광역시 해운대구';
+                document.getElementById('road-name-input').value = '해운대구 센텀1로28';
+                document.getElementById('detail-address-input').value = '102동 5001호';
+                document.getElementById('city-input').value = '해운대구';
+                document.getElementById('my-photo').src = 'arinida88888.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'tmddkdl0' && pw === 'Skdus9') {
+                document.getElementById('name-input').value = '이승아';
+                document.getElementById('rrn1-input').value = '060220';
+                document.getElementById('rrn2-input').value = '4842012';
+                document.getElementById('address-input').value = '서울시 송파구';
+                document.getElementById('road-name-input').value = '송파대로 345';
+                document.getElementById('detail-address-input').value = '101동 1003호';
+                document.getElementById('city-input').value = '서울시';
+                document.getElementById('my-photo').src = 'tmddkdl0.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'kkingkkag123' && pw === 'songhyun44419') {
+                document.getElementById('name-input').value = '오송현';
+                document.getElementById('rrn1-input').value = '070419';
+                document.getElementById('rrn2-input').value = '3933912';
+                document.getElementById('address-input').value = '제주특별자치도 제주시';
+                document.getElementById('road-name-input').value = '아란4길 75-5';
+                document.getElementById('detail-address-input').value = '태성리치빌D동 101동 102호';
+                document.getElementById('city-input').value = '제주시';
+                document.getElementById('my-photo').src = 'kkingkkag123.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'dlwodnjs07' && pw === 'qaz753qazqaz') {
+                document.getElementById('name-input').value = '이재원';
+                document.getElementById('rrn1-input').value = '070716';
+                document.getElementById('rrn2-input').value = '3145237';
+                document.getElementById('address-input').value = '충청남도 아산시';
+                document.getElementById('road-name-input').value = '탕정면 명암리809';
+                document.getElementById('detail-address-input').value = '104동 1203호';
+                document.getElementById('city-input').value = '아산시';
+                document.getElementById('my-photo').src = 'dlwodnjs07.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'vjliz32' && pw === 'ghkd2104**') {
+                document.getElementById('name-input').value = '박지후';
+                document.getElementById('rrn1-input').value = '070923';
+                document.getElementById('rrn2-input').value = '3158613';
+                document.getElementById('address-input').value = '경기도 평택시 고덕동';
+                document.getElementById('road-name-input').value = '고덕국제8로91';
+                document.getElementById('detail-address-input').value = '903동104호';
+                document.getElementById('city-input').value = '평택시';
+                document.getElementById('my-photo').src = 'vjliz32.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'choijunhyuk' && pw === 'junhyuk0510') {
+                document.getElementById('name-input').value = '최준혁';
+                document.getElementById('rrn1-input').value = '070510';
+                document.getElementById('rrn2-input').value = '3400315';
+                document.getElementById('address-input').value = '대전광역시 동구';
+                document.getElementById('road-name-input').value = '천동 228-9';
+                document.getElementById('detail-address-input').value = '501동101호';
+                document.getElementById('city-input').value = '대전광역시';
+                document.getElementById('my-photo').src = 'choijunhyuk.png';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else if (id === 'a0104009' && pw === 'a0104009!') {
+                document.getElementById('name-input').value = '박가연';
+                document.getElementById('rrn1-input').value = '060909';
+                document.getElementById('rrn2-input').value = '4183712';
+                document.getElementById('address-input').value = '경기도 광명시 소하2동';
+                document.getElementById('road-name-input').value = '서원로 1378';
+                document.getElementById('detail-address-input').value = '308동702호';
+                document.getElementById('city-input').value = '광명시';
+                document.getElementById('my-photo').src = 'a0104009.jpg';
+
+                // Disable inputs to prevent modification
+                const inputs = document.querySelectorAll('#input-form input');
+                inputs.forEach(input => input.disabled = true);
+
+                // Disable photo upload label (visual) and input
+                document.getElementById('file-upload').disabled = true;
+                document.querySelector('.upload-label').style.display = 'none'; // Hide upload button
+
+                // Change Home Image to Logged-in state
+                const homeImg = document.querySelector('.home-bg-img');
+                homeImg.src = 'home_logged_in.png';
+
+                // Hide Login Button Trigger
+                document.querySelector('.login-trigger-area').style.display = 'none';
+
+                // Show ID Card Trigger
+                document.getElementById('id-trigger').classList.remove('hidden');
+
+                // Hide Modal
+                hideLoginModal();
+
+                // Start 5-minute auto-logout timer
+                clearTimeout(loginTimeout);
+                loginTimeout = setTimeout(handleLogout, 5 * 60 * 1000); // 5 minutes
+            } else {
+                alert('잘못된 정보입니다');
+            }
+        }
+
+        function showResult() {
+            const name = document.getElementById('name-input').value;
+            const rrn1 = document.getElementById('rrn1-input').value;
+            const rrn2 = document.getElementById('rrn2-input').value;
+            const address = document.getElementById('address-input').value;
+            const roadName = document.getElementById('road-name-input').value;
+            const detailAddress = document.getElementById('detail-address-input').value;
+            const fullDetailAddress = detailAddress; // Store original for toggling
+            const city = document.getElementById('city-input').value;
+            const photoSrc = document.getElementById('my-photo').src;
+
+            if (!name || !rrn1 || !rrn2 || !address || !city) {
+                alert('모든 정보를 입력해주세요.');
+                return;
+            }
+
+            fullRrn2 = rrn2; // Store for toggle
+
+            // Normal View Data
+            document.getElementById('result-name').innerText = name;
+            const yy = rrn1.substring(0, 2);
+            const mm = rrn1.substring(2, 4);
+            const dd = rrn1.substring(4, 6);
+            document.getElementById('result-dob').innerText = `${yy}.${mm}.${dd}`;
+
+            const fullAddress = detailAddress ? `${address} ${detailAddress}` : address;
+            document.getElementById('result-address').innerText = address;
+            document.getElementById('result-photo').src = photoSrc;
+
+            // Detail View Data
+            document.getElementById('detail-photo').src = photoSrc;
+            document.getElementById('detail-name').innerText = name;
+            document.getElementById('detail-rrn').innerHTML = `${rrn1} - <span class="rrn-mask">●●●●●●</span>`;
+
+            // Split Address Display
+            // Split Address Display
+            document.getElementById('detail-address-line1').innerText = address; // Default: Base address only
+            document.getElementById('detail-address-line2').innerText = '............'; // Default masked
+
+            document.getElementById('detail-issuer').innerText = `${city}청장`; // 예: 시흥시 -> 시흥시장
+
+            document.getElementById('detail-issue-date').innerText = "20.24.10.13"; // Hardcoded as requested
+
+            // Reset Toggle
+            document.getElementById('rrn-toggle').checked = false;
+
+            document.getElementById('input-form').classList.add('hidden');
+            document.getElementById('main-header').classList.add('hidden');
+            document.getElementById('login-view').classList.add('hidden'); // Hide home screen
+            document.getElementById('result-view').classList.remove('hidden');
+
+            startTimer();
+        }
+
+        // Toggle Logic for Both RRN and Detailed Address
+        document.getElementById('rrn-toggle').addEventListener('change', function () {
+            const rrn1 = document.getElementById('rrn1-input').value;
+            const rrnSpan = document.getElementById('detail-rrn');
+            const addressLine1 = document.getElementById('detail-address-line1'); // Get Line 1
+            const addressLine2 = document.getElementById('detail-address-line2');
+            const realDetailAddress = document.getElementById('detail-address-input').value; // Room number
+
+            // Get values again as they might come from inputs
+            const baseAddress = document.getElementById('address-input').value;
+            const roadName = document.getElementById('road-name-input').value;
+
+            if (this.checked) {
+                rrnSpan.innerText = `${rrn1} - ${fullRrn2}`;
+
+                // Show Road Name next to Base Address
+                addressLine1.innerText = `${baseAddress} ${roadName}`;
+
+                addressLine2.innerText = realDetailAddress || ''; // Show actual detail address
+                addressLine2.classList.add('revealed'); // Apply thin/small style
+            } else {
+                rrnSpan.innerHTML = `${rrn1} - <span class="rrn-mask">●●●●●●</span>`;
+
+                // Revert to Base Address only
+                addressLine1.innerText = baseAddress;
+
+                addressLine2.innerText = '............'; // Show masked dots
+                addressLine2.classList.remove('revealed'); // Revert to bold/large dots
+            }
+        });
+
+        function toggleView(showDetail) {
+            const normalView = document.getElementById('normal-view');
+            const detailView = document.getElementById('detail-view');
+
+            if (showDetail) {
+                normalView.classList.add('hidden');
+                detailView.classList.remove('hidden');
+            } else {
+                normalView.classList.remove('hidden');
+                detailView.classList.add('hidden');
+            }
+        }
+
+        function startTimer() {
+            let timeLeft = 30;
+            const progressBar = document.getElementById('timer-progress');
+            const timerText = document.getElementById('timer-text');
+            const detailProgressBar = document.getElementById('detail-timer-progress');
+            const detailTimerText = document.getElementById('detail-timer-text');
+
+            // 초기화
+            clearInterval(timerInterval);
+            const updateTimerUI = (time) => {
+                const html = `남은시간 <span class="timer-blue">${time}초</span>`;
+                timerText.innerHTML = html;
+                if (detailTimerText) detailTimerText.innerHTML = html;
+
+                const width = time <= 0 ? '0%' : `${(time / 30) * 100}%`;
+                progressBar.style.width = width;
+                if (detailProgressBar) detailProgressBar.style.width = width;
+            };
+
+            updateTimerUI(timeLeft);
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerUI(timeLeft);
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        function goBack() {
+            // After login flow, back button should return to the home screen
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('result-view').classList.add('hidden');
+            clearInterval(timerInterval); // 뒤로가면 타이머 멈춤
+        }
+
+
+        // Privacy Screen Logic (App Switcher Hiding)
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                document.getElementById('privacy-overlay').classList.remove('hidden');
+            } else {
+                document.getElementById('privacy-overlay').classList.add('hidden');
+            }
+        });
+
+        // Additional handler for iOS PWA background state
+        window.addEventListener('blur', () => {
+            document.getElementById('privacy-overlay').classList.remove('hidden');
+        });
+
+        window.addEventListener('focus', () => {
+            document.getElementById('privacy-overlay').classList.add('hidden');
+        });
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js?v=1.9').then(registration => {
+                    console.log('Service Worker registered', registration);
+
+                    registration.onupdatefound = () => {
+                        const installingWorker = registration.installing;
+                        installingWorker.onstatechange = () => {
+                            if (installingWorker.state === 'installed') {
+                                if (navigator.serviceWorker.controller) {
+                                    // New update available
+                                    console.log('New content is available; please refresh.');
+                                    window.location.reload();
+                                } else {
+                                    // Content is cached for the first time
+                                    console.log('Content is cached for the first time!');
+                                }
+                            }
+                        };
+                    };
+                }).catch(err => {
+                    console.error('Error during service worker registration:', err);
+                });
+
+                // Ensure reload when the new service worker takes control
+                navigator.serviceWorker.addEventListener('controllerchange', () => {
+                    window.location.reload();
+                    console.log('Controller changed.');
+                });
+            });
+        }
+    </script>
+</body>
+
+</html>
